@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/getdozer/dozer-react#readme",
   "dependencies": {
-    "@getdozer/dozer-js": "../dozer-js"
+    "@getdozer/dozer-js": "ssh://git@github.com:getdozer/dozer-js.git"
   },
   "peerDependencies": {
     "react": ">=18.2"

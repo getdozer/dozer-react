@@ -2,8 +2,9 @@
 # yarn lockfile v1
 
 
-"@getdozer/dozer-js@../dozer-js":
+"@getdozer/dozer-js@ssh://git@github.com:getdozer/dozer-js.git":
   version "0.0.1"
+  resolved "ssh://git@github.com:getdozer/dozer-js.git#c0b624f9ab004c8140c3cc38f453caa6d3d63a89"
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"

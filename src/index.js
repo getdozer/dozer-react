@@ -47,7 +47,7 @@ import { OperationType } from "@getdozer/dozer-js/generated/protos/types_pb";
 //
 const useCount = (endpoint) => {
   const [count, setCount] = useState(0)
-  let client = new DozerClient(endpoint);
+  let client = new ApiClient(endpoint);
   useEffect(() => {
     client.count().then((response) => {
       setCount(response.getCount)
