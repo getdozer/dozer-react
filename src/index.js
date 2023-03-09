@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiClient } from "@getdozer/dozer-js/src/client";
-import { RecordMapper } from "@getdozer/dozer-js/src/helper";
-import { OperationType } from "@getdozer/dozer-js/generated/protos/types_pb";
+import { ApiClient } from "@getdozer/dozer-js/lib/client";
 
 // TODO: Refactor this to useStreamWithInitialQuery
 // const useGrpcData = (endpoint) => {
