@@ -73,22 +73,26 @@ const useOnEvent = (endpoint, cb) => {
   const [fields, setFields] = useState([])
   const [primaryIndexKeys, setPrimaryIndexKeys] = useState([]);
   const [mapper, setMapper] = useState(null);
-
-  let client = new ApiClient(endpoint);
-  client.getFields().then(response => {
-    let fields = response.getFieldsList();
-    setFields(fields);
-    let primaryIndexList = response.getPrimaryIndexList();
-    setMapper(new RecordMapper(fields));
-    setPrimaryIndexKeys(primaryIndexList.map(index => fields[index].getName()));
-  });
+  const [isCalled, setIsCalled] = useState(false);
 
   useEffect(() => {
-    if (fields.length > 0) {
-      let stream = client.onEvent();
-      stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
+    if (!isCalled) {
+      setIsCalled(true);
+      let client = new ApiClient(endpoint);
+      client.getFields().then(response => {
+        let fields = response.getFieldsList();
+        setFields(fields);
+        let primaryIndexList = response.getPrimaryIndexList();
+        setMapper(new RecordMapper(fields));
+        setPrimaryIndexKeys(primaryIndexList.map(index => fields[index].getName()));
+      });
+
+      if (fields.length > 0) {
+        let stream = client.onEvent();
+        stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
+      }
     }
-  }, [fields]);
+  }, [fields, isCalled]);
 
   return [fields];
 };
