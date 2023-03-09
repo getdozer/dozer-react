@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiClient } from "@getdozer/dozer-js";
+import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
 
 // TODO: Refactor this to useStreamWithInitialQuery
 // const useGrpcData = (endpoint) => {
@@ -55,12 +56,12 @@ const useCount = (endpoint) => {
   return [count];
 };
 
-const useQueryCommon = (endpoint) => {
+const useQueryCommon = (endpoint, query = null) => {
   const [state, setState] = useState({ records: [], fields: [] });
 
   let client = new ApiClient(endpoint);
   useEffect(() => {
-    client.query().then(([fields, records]) => {
+    client.query(query).then(([fields, records]) => {
       setState({records, fields});
     });
   }, [])
@@ -70,15 +71,22 @@ const useQueryCommon = (endpoint) => {
 
 const useOnEvent = (endpoint, cb) => {
   const [fields, setFields] = useState([])
+  const [primaryIndexKeys, setPrimaryIndexKeys] = useState([]);
+  const [mapper, setMapper] = useState(null);
+
   let client = new ApiClient(endpoint);
   client.getFields().then(response => {
-    setFields(response.getFieldsList());
+    let fields = response.getFieldsList();
+    setFields(fields);
+    let primaryIndexList = response.getPrimaryIndexList();
+    setMapper(new RecordMapper(fields));
+    setPrimaryIndexKeys(primaryIndexList.map(index => fields[index].getName()));
   });
 
   useEffect(() => {
     if (fields.length > 0) {
       let stream = client.onEvent();
-      stream.on('data', cb);
+      stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
     }
   }, [fields]);
 
