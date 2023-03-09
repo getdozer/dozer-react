@@ -71,8 +71,6 @@ const useQueryCommon = (endpoint, query = null) => {
 
 const useOnEvent = (endpoint, cb) => {
   const [fields, setFields] = useState([])
-  const [primaryIndexKeys, setPrimaryIndexKeys] = useState([]);
-  const [mapper, setMapper] = useState(null);
   const [isCalled, setIsCalled] = useState(false);
 
   useEffect(() => {
@@ -83,14 +81,15 @@ const useOnEvent = (endpoint, cb) => {
         let fields = response.getFieldsList();
         setFields(fields);
         let primaryIndexList = response.getPrimaryIndexList();
-        setMapper(new RecordMapper(fields));
-        setPrimaryIndexKeys(primaryIndexList.map(index => fields[index].getName()));
+        const mapper = new RecordMapper(fields);
+        const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
+        return { fields, mapper, primaryIndexKeys };
+      }).then(({ fields, mapper, primaryIndexKeys }) => {
+        if (fields.length > 0) {
+          let stream = client.onEvent();
+          stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
+        }
       });
-
-      if (fields.length > 0) {
-        let stream = client.onEvent();
-        stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
-      }
     }
   }, [fields, isCalled]);
 
