@@ -4,7 +4,7 @@
 
 "@getdozer/dozer-js@ssh://git@github.com:getdozer/dozer-js.git":
   version "0.0.1"
-  resolved "ssh://git@github.com:getdozer/dozer-js.git#b7baec9a782a804f6acf9b99422f62d6dd760b53"
+  resolved "ssh://git@github.com:getdozer/dozer-js.git#425a62cc48890180b89bd0731c8e07de486c0aa4"
   dependencies:
     google-protobuf "^3.21.2"
     grpc-web "^1.4.2"
