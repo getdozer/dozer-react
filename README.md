@@ -25,21 +25,75 @@
 
 ## Overview
 This repository is a react helpers for using [Dozer](https://github.com/getdozer/dozer) as data provider.
-
+It contains 3 hooks `useCount`, `useQueryCommon`, `useOnEvent`
 ## Installation
 
-```typescript
-
+```bash
+yarn install @getdozer/dozer-react
 ```
 
 ## Usage
 
+### `useCount(endpoint: string)`
+
+This hook returns number of records in endpoint.
 ```javascript
-import { useGrpcData } from "@getdozer/dozer-react";
-...
+import { useCount } from "@getdozer/dozer-react";
+// ...
 
 const AirportComponent = () => {
-    const [recors, fields] = useGrpcData('airports');
-    ...
+    const [count] = useCount('airports');
+    // ...
+}
+```
+
+### `useQueryCommon(endpoint: string, query: string | null = null)`
+This hook can be used for getting data from cache. It allows to pass [query](https://getdozer.io/docs/api/grpc/common#dozer-common-QueryRequest). 
+Query is json object serialized as string.
+```javascript
+import { useQueryCommon } from "@getdozer/dozer-react";
+// ...
+
+const AirportComponent = () => {
+    const [recors, fields] = useQueryCommon('airports', '{"$oder_by":{"start":"asc"}}');
+    // ...
+}
+```
+
+### `useOnEvent(endpoint: string, cb: (data, fields, primaryIndexKeys, mapper) => ()`
+UseOnEvent hook can be used for getting data updates from dozer. It uses callback to pass operations.
+Callback has 4 arguments: 
+- `data` - Operation event. Reference to structure can be found [here](https://getdozer.io/docs/api/grpc/common#dozer-types-Operation)
+- `fields` - Fields array, which are used for mapping operation data.
+- `primaryIndexKeys` - Array of primary key fields indexes
+- `mapper` - Mapper instance, which can be used for converting data.
+
+```javascript
+const AirportsComponent = () => {
+  const [airports, setAirports] = useState([]);
+  
+  useOnEvent('airports', (data, fields, primaryIndexKeys, mapper) => {
+    if (fields.length) {
+      setAirports(records => {
+        if (data.getTyp() === OperationType.UPDATE) {
+          let oldValue = mapper.mapRecord(data.getOld().getValuesList());
+          let existingIndex = records.findIndex(v => primaryIndexKeys.every(index => v[index] === oldValue[index]));
+
+          if (records.length > 0) {
+            if (existingIndex > -1) {
+              records[existingIndex] = mapper.mapRecord(data.getNew().getValuesList());
+              return [...records];
+            } else {
+              return [...records, mapper.mapRecord(data.getNew().getValuesList())];
+            }
+          }
+        } else if (data.getTyp() === OperationType.INSERT) {
+          return [...records, mapper.mapRecord(data.getNew().getValuesList())];
+        }
+
+        return records
+      });
+    }
+  });
 }
 ```
