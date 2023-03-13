@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { ApiClient } from "@getdozer/dozer-js";
 import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
+import {FieldDefinition, Operation} from "@getdozer/dozer-js/lib/esm/generated/protos/types_pb";
+
+type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void
 
 // TODO: Refactor this to useStreamWithInitialQuery
 // const useGrpcData = (endpoint) => {
@@ -44,7 +47,7 @@ import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
 //   return [state.records, fields];
 // }
 //
-const useCount = (endpoint) => {
+const useCount = (endpoint: string) => {
   const [count, setCount] = useState(0)
   let client = new ApiClient(endpoint);
   useEffect(() => {
@@ -56,8 +59,13 @@ const useCount = (endpoint) => {
   return [count];
 };
 
-const useQueryCommon = (endpoint, query = null) => {
-  const [state, setState] = useState({ records: [], fields: [] });
+export interface CommonQueryStateType {
+  records: Object[],
+  fields: Object[]
+}
+
+const useQueryCommon = (endpoint: string, query: string | null = null) => {
+  const [state, setState] = useState<CommonQueryStateType>({ records: [], fields: [] });
 
   let client = new ApiClient(endpoint);
   useEffect(() => {
@@ -69,8 +77,8 @@ const useQueryCommon = (endpoint, query = null) => {
   return state;
 };
 
-const useOnEvent = (endpoint, cb) => {
-  const [fields, setFields] = useState([])
+const useOnEvent = (endpoint: string, cb: OnEventCallback) => {
+  const [fields, setFields] = useState<FieldDefinition[]>([])
   const [isCalled, setIsCalled] = useState(false);
 
   useEffect(() => {
