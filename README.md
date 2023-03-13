@@ -29,7 +29,7 @@ It contains 3 hooks `useCount`, `useQueryCommon`, `useOnEvent`
 ## Installation
 
 ```bash
-yarn install @getdozer/dozer-react
+yarn add ssh://git@github.com:getdozer/dozer-react.git
 ```
 
 ## Usage
