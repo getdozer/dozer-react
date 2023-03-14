@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ApiClient } from "@getdozer/dozer-js";
 import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
 import {FieldDefinition, Operation} from "@getdozer/dozer-js/lib/esm/generated/protos/types_pb";
+import {DozerQuery} from "@getdozer/dozer-js/lib/esm/query_helper";
 
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void
 
@@ -64,7 +65,7 @@ export interface CommonQueryStateType {
   fields: Object[]
 }
 
-const useQueryCommon = (endpoint: string, query: string | null = null) => {
+const useQueryCommon = (endpoint: string, query: DozerQuery | null = null) => {
   const [state, setState] = useState<CommonQueryStateType>({ records: [], fields: [] });
 
   let client = new ApiClient(endpoint);
