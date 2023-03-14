@@ -55,7 +55,12 @@ import { useQueryCommon } from "@getdozer/dozer-react";
 // ...
 
 const AirportComponent = () => {
-    const [recors, fields] = useQueryCommon('airports', '{"$oder_by":{"start":"asc"}}');
+    let query = {
+      orderBy: {
+        start: Order.ASC
+      }
+    }
+    const [recors, fields] = useQueryCommon('airports', query);
     // ...
 }
 ```
