@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 import { ApiClient } from "@getdozer/dozer-js";
 import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
+import { HealthCheckResponse } from "@getdozer/dozer-js/lib/esm/generated/protos/health_pb";
+var ServingStatus = HealthCheckResponse.ServingStatus;
+const waitForHealthyService = (client, cb) => {
+    let startService = () => {
+        client.healthCheck().then(status => {
+            if (status.getStatus() === ServingStatus.SERVING) {
+                cb();
+            }
+            else {
+                setTimeout(startService, 1000);
+            }
+        }).catch(() => {
+            setTimeout(startService, 1000);
+        });
+    };
+    startService();
+};
 // TODO: Refactor this to useStreamWithInitialQuery
 // const useGrpcData = (endpoint) => {
 //   const [fields, setFields] = useState([])
@@ -57,8 +74,10 @@ const useQueryCommon = (endpoint, query = null) => {
     const [state, setState] = useState({ records: [], fields: [] });
     let client = new ApiClient(endpoint);
     useEffect(() => {
-        client.query(query).then(([fields, records]) => {
-            setState({ records, fields });
+        waitForHealthyService(client, () => {
+            client.query(query).then(([fields, records]) => {
+                setState({ records, fields });
+            });
         });
     }, []);
     return state;
@@ -66,25 +85,27 @@ const useQueryCommon = (endpoint, query = null) => {
 const useOnEvent = (endpoint, cb) => {
     const [fields, setFields] = useState([]);
     const [isCalled, setIsCalled] = useState(false);
+    let client = new ApiClient(endpoint);
     useEffect(() => {
         if (!isCalled) {
             setIsCalled(true);
-            let client = new ApiClient(endpoint);
-            client.getFields().then(response => {
-                let fields = response.getFieldsList();
-                setFields(fields);
-                let primaryIndexList = response.getPrimaryIndexList();
-                const mapper = new RecordMapper(fields);
-                const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
-                return { fields, mapper, primaryIndexKeys };
-            }).then(({ fields, mapper, primaryIndexKeys }) => {
-                if (fields.length > 0) {
-                    let stream = client.onEvent();
-                    stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
-                }
+            waitForHealthyService(client, () => {
+                client.getFields().then(response => {
+                    let fields = response.getFieldsList();
+                    setFields(fields);
+                    let primaryIndexList = response.getPrimaryIndexList();
+                    const mapper = new RecordMapper(fields);
+                    const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
+                    return { fields, mapper, primaryIndexKeys };
+                }).then(({ fields, mapper, primaryIndexKeys }) => {
+                    if (fields.length > 0) {
+                        let stream = client.onEvent();
+                        stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
+                    }
+                });
             });
         }
-    }, [fields, isCalled]);
+    }, [isCalled]);
     return [fields];
 };
 export { useQueryCommon, useCount, useOnEvent };

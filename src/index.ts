@@ -1,11 +1,28 @@
 import { useEffect, useState } from "react";
 import { ApiClient } from "@getdozer/dozer-js";
 import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
-import {FieldDefinition, Operation} from "@getdozer/dozer-js/lib/esm/generated/protos/types_pb";
-import {DozerQuery} from "@getdozer/dozer-js/lib/esm/query_helper";
+import { FieldDefinition, Operation } from "@getdozer/dozer-js/lib/esm/generated/protos/types_pb";
+import { DozerQuery } from "@getdozer/dozer-js/lib/esm/query_helper";
+import { HealthCheckResponse } from "@getdozer/dozer-js/lib/esm/generated/protos/health_pb";
+import ServingStatus = HealthCheckResponse.ServingStatus;
 
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void
 
+const waitForHealthyService = (client: ApiClient, cb: () => void) => {
+  let startService = () => {
+    client.healthCheck().then(status => {
+      if (status.getStatus() === ServingStatus.SERVING) {
+        cb();
+      } else {
+        setTimeout(startService, 1000);
+      }
+    }).catch(() => {
+      setTimeout(startService, 1000);
+    });
+  }
+
+  startService();
+}
 // TODO: Refactor this to useStreamWithInitialQuery
 // const useGrpcData = (endpoint) => {
 //   const [fields, setFields] = useState([])
@@ -70,8 +87,10 @@ const useQueryCommon = (endpoint: string, query: DozerQuery | null = null) => {
 
   let client = new ApiClient(endpoint);
   useEffect(() => {
-    client.query(query).then(([fields, records]) => {
-      setState({records, fields});
+    waitForHealthyService(client, () => {
+      client.query(query).then(([fields, records]) => {
+        setState({records, fields});
+      });
     });
   }, [])
 
@@ -82,25 +101,27 @@ const useOnEvent = (endpoint: string, cb: OnEventCallback) => {
   const [fields, setFields] = useState<FieldDefinition[]>([])
   const [isCalled, setIsCalled] = useState(false);
 
+  let client = new ApiClient(endpoint);
   useEffect(() => {
     if (!isCalled) {
       setIsCalled(true);
-      let client = new ApiClient(endpoint);
-      client.getFields().then(response => {
-        let fields = response.getFieldsList();
-        setFields(fields);
-        let primaryIndexList = response.getPrimaryIndexList();
-        const mapper = new RecordMapper(fields);
-        const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
-        return { fields, mapper, primaryIndexKeys };
-      }).then(({ fields, mapper, primaryIndexKeys }) => {
-        if (fields.length > 0) {
-          let stream = client.onEvent();
-          stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
-        }
+      waitForHealthyService(client, () => {
+        client.getFields().then(response => {
+          let fields = response.getFieldsList();
+          setFields(fields);
+          let primaryIndexList = response.getPrimaryIndexList();
+          const mapper = new RecordMapper(fields);
+          const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
+          return { fields, mapper, primaryIndexKeys };
+        }).then(({ fields, mapper, primaryIndexKeys }) => {
+          if (fields.length > 0) {
+            let stream = client.onEvent();
+            stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
+          }
+        });
       });
     }
-  }, [fields, isCalled]);
+  }, [isCalled]);
 
   return [fields];
 };
