@@ -55,7 +55,7 @@ import { useQueryCommon } from "@getdozer/dozer-react";
 // ...
 
 const AirportComponent = () => {
-    let query: DozerQuery = {
+    let query = {
       orderBy: {
         start: Order.ASC
       }

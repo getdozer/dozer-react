@@ -1,5 +1,5 @@
 {
-  "name": "@getdozer/dozer-react",
+  "name": "@dozerjs/dozer-react",
   "version": "0.0.1",
   "description": "",
   "main": "src/index.ts",
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/getdozer/dozer-react#readme",
   "dependencies": {
-    "@getdozer/dozer-js": "ssh://git@github.com:getdozer/dozer-js.git",
+    "@dozerjs/dozer": "0.0.1",
     "@types/react": "^18.0.28"
   },
   "files": [

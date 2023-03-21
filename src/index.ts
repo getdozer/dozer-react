@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { ApiClient } from "@getdozer/dozer-js";
-import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
-import { FieldDefinition, Operation } from "@getdozer/dozer-js/lib/esm/generated/protos/types_pb";
-import { DozerQuery } from "@getdozer/dozer-js/lib/esm/query_helper";
-import { HealthCheckResponse } from "@getdozer/dozer-js/lib/esm/generated/protos/health_pb";
+import { ApiClient } from "@dozerjs/dozer";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
+import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
 import ServingStatus = HealthCheckResponse.ServingStatus;
 
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void

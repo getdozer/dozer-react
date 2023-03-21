@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { ApiClient } from "@getdozer/dozer-js";
-import { RecordMapper } from "@getdozer/dozer-js/lib/esm/helper";
-import { HealthCheckResponse } from "@getdozer/dozer-js/lib/esm/generated/protos/health_pb";
+import { ApiClient } from "@dozerjs/dozer";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
 var ServingStatus = HealthCheckResponse.ServingStatus;
 const waitForHealthyService = (client, cb) => {
     let startService = () => {
