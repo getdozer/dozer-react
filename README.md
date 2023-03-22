@@ -43,7 +43,8 @@ import { useCount } from "@dozerjs/dozer-react";
 
 const AirportComponent = () => {
     const [count] = useCount('airports');
-    // ...
+
+    return <span>Total airports count: {count}</span>
 }
 ```
 
@@ -60,8 +61,9 @@ const AirportComponent = () => {
         start: Order.ASC
       }
     }
-    const [recors, fields] = useQueryCommon('airports', query);
-    // ...
+    const [records, fields] = useQueryCommon('airports', query);
+    
+    return <>{records.map(r => <div>{ r.name }</div>)}</>
 }
 ```
 
@@ -100,5 +102,7 @@ const AirportsComponent = () => {
       });
     }
   });
+  
+  return <>{airports.map(airport => <div>{ airport.name }</div>)}</>
 }
 ```
