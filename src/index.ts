@@ -65,9 +65,9 @@ const waitForHealthyService = (client: ApiClient, cb: () => void) => {
 //   return [state.records, fields];
 // }
 //
-const useCount = (endpoint: string) => {
+const useCount = (endpoint: string, authToken: string | null) => {
   const [count, setCount] = useState(0)
-  let client = new ApiClient(endpoint);
+  let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
   useEffect(() => {
     client.count().then((response) => {
       setCount(response.getCount)
@@ -82,10 +82,10 @@ export interface CommonQueryStateType {
   fields: Object[]
 }
 
-const useQueryCommon = (endpoint: string, query: DozerQuery | null = null) => {
+const useQueryCommon = (endpoint: string, query: DozerQuery | null = null, authToken: string | null) => {
   const [state, setState] = useState<CommonQueryStateType>({ records: [], fields: [] });
 
-  let client = new ApiClient(endpoint);
+  let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
   useEffect(() => {
     waitForHealthyService(client, () => {
       client.query(query).then(([fields, records]) => {
@@ -97,11 +97,11 @@ const useQueryCommon = (endpoint: string, query: DozerQuery | null = null) => {
   return state;
 };
 
-const useOnEvent = (endpoint: string, cb: OnEventCallback) => {
+const useOnEvent = (endpoint: string, cb: OnEventCallback, authToken: string | null) => {
   const [fields, setFields] = useState<FieldDefinition[]>([])
   const [isCalled, setIsCalled] = useState(false);
 
-  let client = new ApiClient(endpoint);
+  let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
   useEffect(() => {
     if (!isCalled) {
       setIsCalled(true);

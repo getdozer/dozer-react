@@ -60,9 +60,9 @@ const waitForHealthyService = (client, cb) => {
 //   return [state.records, fields];
 // }
 //
-const useCount = (endpoint) => {
+const useCount = (endpoint, authToken) => {
     const [count, setCount] = useState(0);
-    let client = new ApiClient(endpoint);
+    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
     useEffect(() => {
         client.count().then((response) => {
             setCount(response.getCount);
@@ -70,9 +70,9 @@ const useCount = (endpoint) => {
     }, []);
     return [count];
 };
-const useQueryCommon = (endpoint, query = null) => {
+const useQueryCommon = (endpoint, query = null, authToken) => {
     const [state, setState] = useState({ records: [], fields: [] });
-    let client = new ApiClient(endpoint);
+    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
     useEffect(() => {
         waitForHealthyService(client, () => {
             client.query(query).then(([fields, records]) => {
@@ -82,10 +82,10 @@ const useQueryCommon = (endpoint, query = null) => {
     }, []);
     return state;
 };
-const useOnEvent = (endpoint, cb) => {
+const useOnEvent = (endpoint, cb, authToken) => {
     const [fields, setFields] = useState([]);
     const [isCalled, setIsCalled] = useState(false);
-    let client = new ApiClient(endpoint);
+    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
     useEffect(() => {
         if (!isCalled) {
             setIsCalled(true);

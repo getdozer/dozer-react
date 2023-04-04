@@ -1,6 +1,6 @@
 {
   "name": "@dozerjs/dozer-react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -17,14 +17,14 @@
     "type": "git",
     "url": "git+https://github.com/getdozer/dozer-react.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "getdozer/dozer-dev",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/getdozer/dozer-react/issues"
   },
   "homepage": "https://github.com/getdozer/dozer-react#readme",
   "dependencies": {
-    "@dozerjs/dozer": "0.0.1",
+    "@dozerjs/dozer": "0.0.4",
     "@types/react": "^18.0.28"
   },
   "files": [

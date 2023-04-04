@@ -29,7 +29,7 @@ It contains 3 hooks `useCount`, `useQueryCommon`, `useOnEvent`
 ## Installation
 
 ```bash
-yarn add ssh://git@github.com:getdozer/dozer-react.git
+yarn add @dozerjs/dozer-react
 ```
 
 ## Usage
@@ -38,12 +38,13 @@ yarn add ssh://git@github.com:getdozer/dozer-react.git
 
 This hook returns number of records in endpoint.
 ```javascript
-import { useCount } from "@getdozer/dozer-react";
+import { useCount } from "@dozerjs/dozer-react";
 // ...
 
 const AirportComponent = () => {
     const [count] = useCount('airports');
-    // ...
+
+    return <span>Total airports count: {count}</span>
 }
 ```
 
@@ -51,7 +52,7 @@ const AirportComponent = () => {
 This hook can be used for getting data from cache. It allows to pass [query](https://getdozer.io/docs/api/grpc/common#dozer-common-QueryRequest). 
 Query is json object serialized as string.
 ```javascript
-import { useQueryCommon } from "@getdozer/dozer-react";
+import { useQueryCommon } from "@dozerjs/dozer-react";
 // ...
 
 const AirportComponent = () => {
@@ -60,8 +61,9 @@ const AirportComponent = () => {
         start: Order.ASC
       }
     }
-    const [recors, fields] = useQueryCommon('airports', query);
-    // ...
+    const [records, fields] = useQueryCommon('airports', query);
+    
+    return <>{records.map(r => <div>{ r.name }</div>)}</>
 }
 ```
 
@@ -100,5 +102,7 @@ const AirportsComponent = () => {
       });
     }
   });
+  
+  return <>{airports.map(airport => <div>{ airport.name }</div>)}</>
 }
 ```
