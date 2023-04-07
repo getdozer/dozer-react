@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/getdozer/dozer-react#readme",
   "dependencies": {
-    "@dozerjs/dozer": "0.0.4",
+    "@dozerjs/dozer": "0.0.5",
     "@types/react": "^18.0.28"
   },
   "files": [

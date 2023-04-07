@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@dozerjs/dozer@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@dozerjs/dozer/-/dozer-0.0.4.tgz#c864eec2a5b36419478f7b94f055f68c59fe60c8"
-  integrity sha512-DCeRkIV8fSIuLvJpbq4p3BvXIM8oDMLZc3c5nEY2iguPRr4aEmMYyiKLyQkrfs1kRh4syamXMjOOj85U0o7wmQ==
+"@dozerjs/dozer@0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@dozerjs/dozer/-/dozer-0.0.5.tgz#4ca171399135bf5e91df14c1eac9a55fe6709a5d"
+  integrity sha512-Xkiw6kG/gp3XiKEW9zqrld1huimw01GPPl6Ipfpxn6PJIP/AcbpCS6zobGN163C8NSHDaDec1G0FdNQMbGGLoQ==
   dependencies:
     "@types/google-protobuf" "^3.15.6"
     google-protobuf "^3.21.2"
