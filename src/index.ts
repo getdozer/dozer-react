@@ -67,13 +67,13 @@ const waitForHealthyService = (client: ApiClient, cb: () => void) => {
 //
 export type ClientParams = {
   endpoint: string;
-  authToken: string | null;
+  [key: string]: any;
 }
 
 const getClient = (clientOrParams: ApiClient | ClientParams): ApiClient => {
   if (!(clientOrParams instanceof ApiClient)) {
-    const {endpoint, authToken} = clientOrParams;
-    return new ApiClient(endpoint, authToken ? { authToken } : undefined);
+    const {endpoint, ...clientOptions} = clientOrParams;
+    return new ApiClient(endpoint, clientOptions);
   }
   return clientOrParams as ApiClient;
 }
