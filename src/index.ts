@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiClient } from "@dozerjs/dozer";
+import { ApiClient, ApiClientOptions } from "@dozerjs/dozer";
 import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
 import { EventType, FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
 import { DozerFilter, DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
@@ -65,10 +65,15 @@ const waitForHealthyService = (client: ApiClient, cb: () => void) => {
 //   return [state.records, fields];
 // }
 //
-export type ClientParams = {
+
+type PartialType<Type> = {
+  [Property in keyof Type]?: Type[Property];
+};
+
+type ClientParams = PartialType<ApiClientOptions> & {
   endpoint: string;
-  [key: string]: any;
-}
+};
+
 
 const getClient = (clientOrParams: ApiClient | ClientParams): ApiClient => {
   if (!(clientOrParams instanceof ApiClient)) {
