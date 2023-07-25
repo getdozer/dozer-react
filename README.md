@@ -34,15 +34,18 @@ yarn add @dozerjs/dozer-react
 
 ## Usage
 
-### `useCount(endpoint: string)`
+### `useDozerEndpointCount(endpoint: string)`
 
 This hook returns number of records in endpoint.
 ```javascript
-import { useCount } from "@dozerjs/dozer-react";
+import { EventType } from '@dozerjs/dozer';
+import { useDozerEndpointCount } from "@dozerjs/dozer-react";
 // ...
 
 const AirportComponent = () => {
-    const [count] = useCount('airports');
+    // count will be updated on any change in airports endpoint
+    // if you don't want to watch for changes, you can remove watch option
+    const [count] = useDozerEndpointCount('airports', { watch: EventType.ALL });
 
     return <span>Total airports count: {count}</span>
 }
@@ -52,7 +55,8 @@ const AirportComponent = () => {
 This hook can be used for getting data from cache. It allows to pass [query](https://getdozer.io/docs/api/grpc/common#dozer-common-QueryRequest). 
 Query is json object serialized as string.
 ```javascript
-import { useQueryCommon } from "@dozerjs/dozer-react";
+import { EventType } from '@dozerjs/dozer';
+import { useDozerEndpointQuery } from "@dozerjs/dozer-react";
 // ...
 
 const AirportComponent = () => {
@@ -61,7 +65,9 @@ const AirportComponent = () => {
         start: Order.ASC
       }
     }
-    const [records, fields] = useQueryCommon('airports', query);
+    // records will be updated on any change in airports endpoint
+    // if you don't want to watch for changes, you can remove watch option
+    const [records, fields] = useDozerEndpointQuery('airports', { query, watch: EventType.ALL });
     
     return <>{records.map(r => <div>{ r.name }</div>)}</>
 }
@@ -76,33 +82,16 @@ Callback has 4 arguments:
 - `mapper` - Mapper instance, which can be used for converting data.
 
 ```javascript
+import { EventType } from '@dozerjs/dozer';
+
 const AirportsComponent = () => {
-  const [airports, setAirports] = useState([]);
-  
-  useOnEvent('airports', (data, fields, primaryIndexKeys, mapper) => {
-    if (fields.length) {
-      setAirports(records => {
-        if (data.getTyp() === OperationType.UPDATE) {
-          let oldValue = mapper.mapRecord(data.getOld().getValuesList());
-          let existingIndex = records.findIndex(v => primaryIndexKeys.every(index => v[index] === oldValue[index]));
-
-          if (records.length > 0) {
-            if (existingIndex > -1) {
-              records[existingIndex] = mapper.mapRecord(data.getNew().getValuesList());
-              return [...records];
-            } else {
-              return [...records, mapper.mapRecord(data.getNew().getValuesList())];
-            }
-          }
-        } else if (data.getTyp() === OperationType.INSERT) {
-          return [...records, mapper.mapRecord(data.getNew().getValuesList())];
-        }
-
-        return records
-      });
-    }
-  });
-  
-  return <>{airports.map(airport => <div>{ airport.name }</div>)}</>
+    // count and records will be updated on any change in airports endpoint
+    // if you don't want to watch for changes, you can remove watch option
+    const [count, records, fields] = useDozerEndpoint('airports', { watch: EventType.ALL });
+    
+    return <>
+        <div>Count: {count}</div>
+        {airports.map((airport, idx) => <div key={idx}>{ airport.name }</div>)}
+    </>
 }
 ```

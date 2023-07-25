@@ -1,13 +1,21 @@
-import { useEffect, useState } from "react";
 import { ApiClient } from "@dozerjs/dozer";
-import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
-import { FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
-import { DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
 import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
+import { FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
+import { useEffect, useState } from "react";
+import { useDozerClient } from "./useDozerClient";
+import { useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery } from "./useEndpoint";
 import ServingStatus = HealthCheckResponse.ServingStatus;
+import { DozerConsumer, DozerProvider } from "./context";
 
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void
 
+
+/**
+ * @deprecated
+ * called in the methods of DozerEndpoint already
+ */
 const waitForHealthyService = (client: ApiClient, cb: () => void) => {
   let startService = () => {
     client.healthCheck().then(status => {
@@ -65,12 +73,17 @@ const waitForHealthyService = (client: ApiClient, cb: () => void) => {
 //   return [state.records, fields];
 // }
 //
+
+/**
+ * @deprecated
+ * use useDozerEndpointCount instead
+ */
 const useCount = (endpoint: string, authToken: string | null) => {
   const [count, setCount] = useState(0)
   let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
   useEffect(() => {
     client.count().then((response) => {
-      setCount(response.getCount)
+      setCount(response.getCount())
     });
   }, [])
 
@@ -82,6 +95,10 @@ export interface CommonQueryStateType {
   fields: Object[]
 }
 
+/**
+ * @deprecated
+ * use useDozerEndpointQuery instead
+ */
 const useQueryCommon = (endpoint: string, query: DozerQuery | null = null, authToken: string | null) => {
   const [state, setState] = useState<CommonQueryStateType>({ records: [], fields: [] });
 
@@ -97,6 +114,10 @@ const useQueryCommon = (endpoint: string, query: DozerQuery | null = null, authT
   return state;
 };
 
+/**
+ * @deprecated
+ * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
+ */
 const useOnEvent = (endpoint: string, cb: OnEventCallback, authToken: string | null) => {
   const [fields, setFields] = useState<FieldDefinition[]>([])
   const [isCalled, setIsCalled] = useState(false);
@@ -126,4 +147,4 @@ const useOnEvent = (endpoint: string, cb: OnEventCallback, authToken: string | n
   return [fields];
 };
 
-export { useQueryCommon, useCount, useOnEvent }
+export { useCount, useDozerClient, useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery, useOnEvent, useQueryCommon, DozerConsumer, DozerProvider };

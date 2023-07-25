@@ -1,8 +1,15 @@
-import { useEffect, useState } from "react";
 import { ApiClient } from "@dozerjs/dozer";
-import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
 import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { useEffect, useState } from "react";
+import { useDozerClient } from "./useDozerClient";
+import { useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery } from "./useEndpoint";
 var ServingStatus = HealthCheckResponse.ServingStatus;
+import { DozerConsumer, DozerProvider } from "./context";
+/**
+ * @deprecated
+ * called in the methods of DozerEndpoint already
+ */
 const waitForHealthyService = (client, cb) => {
     let startService = () => {
         client.healthCheck().then(status => {
@@ -60,16 +67,24 @@ const waitForHealthyService = (client, cb) => {
 //   return [state.records, fields];
 // }
 //
+/**
+ * @deprecated
+ * use useDozerEndpointCount instead
+ */
 const useCount = (endpoint, authToken) => {
     const [count, setCount] = useState(0);
     let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
     useEffect(() => {
         client.count().then((response) => {
-            setCount(response.getCount);
+            setCount(response.getCount());
         });
     }, []);
     return [count];
 };
+/**
+ * @deprecated
+ * use useDozerEndpointQuery instead
+ */
 const useQueryCommon = (endpoint, query = null, authToken) => {
     const [state, setState] = useState({ records: [], fields: [] });
     let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
@@ -82,6 +97,10 @@ const useQueryCommon = (endpoint, query = null, authToken) => {
     }, []);
     return state;
 };
+/**
+ * @deprecated
+ * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
+ */
 const useOnEvent = (endpoint, cb, authToken) => {
     const [fields, setFields] = useState([]);
     const [isCalled, setIsCalled] = useState(false);
@@ -108,4 +127,4 @@ const useOnEvent = (endpoint, cb, authToken) => {
     }, [isCalled]);
     return [fields];
 };
-export { useQueryCommon, useCount, useOnEvent };
+export { useCount, useDozerClient, useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery, useOnEvent, useQueryCommon, DozerConsumer, DozerProvider };
