@@ -1,5 +1,4 @@
-import { DozerQuery, EventType } from "@dozerjs/dozer";
-import { FieldDefinition } from "@dozerjs/dozer";
+import { DozerQuery, EventType, FieldDefinition } from "@dozerjs/dozer";
 export declare function useDozerEndpointCount(name: string, options?: {
     query?: DozerQuery;
     watch?: EventType;

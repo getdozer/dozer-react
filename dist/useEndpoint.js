@@ -1,4 +1,4 @@
-import { OperationType } from "@dozerjs/dozer";
+import { OperationType, Type } from "@dozerjs/dozer";
 import { useEffect, useState } from "react";
 import { DozerConsumer } from "./context";
 export function useDozerEndpointCount(name, options) {
@@ -39,7 +39,7 @@ function useDozerEndpointCommon(name, options) {
     }, []);
     useEffect(() => {
         var _a;
-        if (options === null || options === void 0 ? void 0 : options.watch) {
+        if ((options === null || options === void 0 ? void 0 : options.watch) !== undefined) {
             const stream = endpoint.onEvent((evt) => {
                 if (evt.data.typ === OperationType.INSERT) {
                     options.onlyCount || setBuffer((prev) => {
@@ -54,15 +54,10 @@ function useDozerEndpointCommon(name, options) {
                 }
                 else if (evt.data.typ === OperationType.DELETE) {
                     options.onlyCount || setBuffer((prev) => {
-                        var _a;
-                        const newValue = (_a = evt.data.new) !== null && _a !== void 0 ? _a : {};
-                        const index = prev.findIndex((record) => {
-                            return evt.primaryIndexKeys.every((key) => {
-                                return record[key] === newValue[key];
-                            });
-                        });
+                        const index = prev.findIndex((record) => compareFn(record, evt.data.new, evt.fields, evt.primaryIndexKeys));
                         if (index > -1) {
-                            return prev.splice(index, 1);
+                            prev.splice(index, 1);
+                            return prev;
                         }
                         else {
                             return prev;
@@ -74,13 +69,11 @@ function useDozerEndpointCommon(name, options) {
                     options.onlyCount || setBuffer((prev) => {
                         var _a;
                         const newValue = (_a = evt.data.new) !== null && _a !== void 0 ? _a : {};
-                        const index = prev.findIndex((record) => {
-                            return evt.primaryIndexKeys.every((key) => {
-                                return record[key] === newValue[key];
-                            });
-                        });
+                        const index = prev.findIndex((record) => compareFn(record, evt.data.new, evt.fields, evt.primaryIndexKeys));
                         if (index > -1) {
-                            return prev.splice(index, 1, newValue);
+                            prev.splice(index, 1, newValue);
+                            return [...prev];
+                            ;
                         }
                         else {
                             return prev;
@@ -94,4 +87,16 @@ function useDozerEndpointCommon(name, options) {
         }
     }, []);
     return { count, fields, records };
+}
+function compareFn(record, newValue = {}, fields, primaryIndexKeys) {
+    return primaryIndexKeys.every((key) => {
+        const k = key;
+        const f = fields === null || fields === void 0 ? void 0 : fields.find((f) => f.getName() === key);
+        if ((f === null || f === void 0 ? void 0 : f.getTyp()) === Type.POINT) {
+            return record[k].toString() === newValue[k].toString();
+        }
+        else {
+            return record[k] === newValue[k];
+        }
+    });
 }

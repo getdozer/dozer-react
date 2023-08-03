@@ -1,9 +1,5 @@
-import { FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { DozerQuery, FieldDefinition, Operation } from "@dozerjs/dozer";
 import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
-import { DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
-import { useDozerClient } from "./useDozerClient";
-import { useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery } from "./useEndpoint";
-import { DozerConsumer, DozerProvider } from "./context";
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void;
 /**
  * @deprecated
@@ -24,4 +20,7 @@ declare const useQueryCommon: (endpoint: string, query: DozerQuery | null | unde
  * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
  */
 declare const useOnEvent: (endpoint: string, cb: OnEventCallback, authToken: string | null) => FieldDefinition[][];
-export { useCount, useDozerClient, useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery, useOnEvent, useQueryCommon, DozerConsumer, DozerProvider };
+export * from './context';
+export * from './useDozerClient';
+export * from './useEndpoint';
+export { useCount, useOnEvent, useQueryCommon };
