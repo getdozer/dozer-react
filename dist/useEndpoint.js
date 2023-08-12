@@ -1,4 +1,4 @@
-import { OperationType, Type } from "@dozerjs/dozer";
+import { OperationType, Type } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
 import { useEffect, useState } from "react";
 import { DozerConsumer } from "./context";
 export function useDozerEndpointCount(name, options) {

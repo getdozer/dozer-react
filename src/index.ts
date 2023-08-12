@@ -1,5 +1,6 @@
-import { ApiClient, DozerQuery, FieldDefinition, Operation } from "@dozerjs/dozer";
+import { ApiClient, DozerQuery, FieldDefinition } from "@dozerjs/dozer";
 import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
+import { Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
 import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
 import { useEffect, useState } from "react";
 import ServingStatus = HealthCheckResponse.ServingStatus;

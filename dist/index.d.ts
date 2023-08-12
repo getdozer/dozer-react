@@ -1,4 +1,5 @@
-import { DozerQuery, FieldDefinition, Operation } from "@dozerjs/dozer";
+import { DozerQuery, FieldDefinition } from "@dozerjs/dozer";
+import { Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
 import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void;
 /**
