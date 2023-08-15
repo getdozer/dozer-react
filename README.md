@@ -25,7 +25,7 @@
 
 ## Overview
 This repository is a react helpers for using [Dozer](https://github.com/getdozer/dozer) as data provider.
-It contains 3 hooks `useCount`, `useQueryCommon`, `useOnEvent`
+It contains 3 hooks `useDozerEndpointCount`, `useDozerEndpointQuery`, `useDozerEndpoint`
 ## Installation
 
 ```bash
@@ -34,11 +34,26 @@ yarn add @dozerjs/dozer-react
 
 ## Usage
 
+### Provider
+```tsx
+import { DozerProvider } from "@dozerjs/dozer-react";
+
+function App () {
+    return (
+        <DozerProvider value={{
+            serverAddress: 'http://localhost:50051',
+        }}>
+            {/* ... */}
+        </DozerProvider>
+    )
+}
+```
+
 ### `useDozerEndpointCount(endpoint: string, options?: { query?: DozerQuery; watch?: EventType; })`
 
 This hook returns number of records in endpoint.
 ```javascript
-import { EventType } from '@dozerjs/dozer';
+import { EventType } from '@dozerjs/dozer/lib/esm/generated/protos/types_pb';
 import { useDozerEndpointCount } from "@dozerjs/dozer-react";
 // ...
 
@@ -55,7 +70,8 @@ const AirportComponent = () => {
 This hook can be used for getting data from cache. It allows to pass [query](https://getdozer.io/docs/api/grpc/common#dozer-common-QueryRequest). 
 Query is json object serialized as string.
 ```javascript
-import { EventType } from '@dozerjs/dozer';
+import { Order } from '@dozerjs/dozer';
+import { EventType } from '@dozerjs/dozer/lib/esm/generated/protos/types_pb';
 import { useDozerEndpointQuery } from "@dozerjs/dozer-react";
 // ...
 
@@ -76,7 +92,8 @@ const AirportComponent = () => {
 ### `useDozerEndpoint(endpoint: string, options?: { query?: DozerQuery; watch?: EventType; })`
 
 ```javascript
-import { EventType } from '@dozerjs/dozer';
+import { EventType } from '@dozerjs/dozer/lib/esm/generated/protos/types_pb';
+import { useDozerEndpointQuery } from "@dozerjs/dozer-react";
 
 const AirportsComponent = () => {
     // count and records will be updated on any change in airports endpoint
