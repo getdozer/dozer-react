@@ -144,7 +144,7 @@ const useOnEvent = (clientOrParams: ApiClient | ClientParams, cb: OnEventCallbac
         client.getFields().then(response => {
           let fields = response.getFieldsList();
           setFields(fields);
-          let primaryIndexList = response.getPrimaryIndexList();
+          let primaryIndexList: number[] = response.getPrimaryIndexList();
           const mapper = new RecordMapper(fields);
           const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
           return { fields, mapper, primaryIndexKeys };
