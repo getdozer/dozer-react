@@ -6,18 +6,33 @@ export function useDozerEndpointCount(name, options) {
     return { count };
 }
 export function useDozerEndpointQuery(name, options) {
-    const { fields, records } = useDozerEndpointCommon(name, Object.assign({}, options, { onlyQuery: true }));
-    return { fields, records };
+    const { fields, records, error } = useDozerEndpointCommon(name, Object.assign({}, options, { onlyQuery: true }));
+    return { fields, records, error };
+}
+export function useDozerEndpointFields(name) {
+    const { client } = DozerConsumer();
+    const endpoint = client.getEndpoint(name);
+    const [fields, setFields] = useState();
+    const [error, setError] = useState();
+    useEffect(() => {
+        endpoint.getFields().then((response) => {
+            setFields(response.getFieldsList());
+        }).catch(error => {
+            setError(error);
+        });
+    }, [name]);
+    return { fields, error };
 }
 export function useDozerEndpoint(name, options) {
-    const { count, fields, records } = useDozerEndpointCommon(name, options);
-    return { count, fields, records };
+    const { count, fields, records, error } = useDozerEndpointCommon(name, options);
+    return { count, fields, records, error };
 }
 function useDozerEndpointCommon(name, options) {
     var _a, _b;
     const [count, setCount] = useState(0);
     const [fields, setFields] = useState();
     const [records, setRecords] = useState([]);
+    const [error, setError] = useState();
     const { client } = DozerConsumer();
     const endpoint = client.getEndpoint(name);
     const limit = (_b = (_a = options === null || options === void 0 ? void 0 : options.query) === null || _a === void 0 ? void 0 : _a.limit) !== null && _b !== void 0 ? _b : 50;
@@ -28,6 +43,8 @@ function useDozerEndpointCommon(name, options) {
     useEffect(() => {
         (options === null || options === void 0 ? void 0 : options.onlyQuery) || endpoint.count(options === null || options === void 0 ? void 0 : options.query).then((response) => {
             setCount(response.getCount());
+        }).catch(error => {
+            setError(error);
         });
     }, []);
     useEffect(() => {
@@ -35,6 +52,8 @@ function useDozerEndpointCommon(name, options) {
             const [fields, records] = response;
             setFields(fields);
             setBuffer(records);
+        }).catch(error => {
+            setError(error);
         });
     }, []);
     useEffect(() => {
@@ -86,7 +105,7 @@ function useDozerEndpointCommon(name, options) {
             };
         }
     }, []);
-    return { count, fields, records };
+    return { error, count, fields, records };
 }
 function compareFn(record, newValue = {}, fields, primaryIndexKeys) {
     return primaryIndexKeys.every((key) => {

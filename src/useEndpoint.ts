@@ -1,7 +1,8 @@
 import { DozerEndpointEvent, DozerQuery } from "@dozerjs/dozer";
-import { EventType, FieldDefinition, OperationType, Record, Type } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
-import { useEffect, useState } from "react";
+import { EventType, FieldDefinition, Operation, OperationType, Record, Type } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { useEffect, useRef, useState } from "react";
 import { DozerConsumer } from "./context";
+import { ClientReadableStream } from "grpc-web";
 
 export function useDozerEndpointCount(name: string, options?: {
   query?: DozerQuery,
@@ -15,16 +16,33 @@ export function useDozerEndpointQuery(name: string, options?: {
   query?: DozerQuery,
   watch?: EventType,
 }) {
-  const { fields, records } = useDozerEndpointCommon(name, Object.assign({}, options, { onlyQuery: true }));
-  return { fields, records };
+  const { fields, records, error } = useDozerEndpointCommon(name, Object.assign({}, options, { onlyQuery: true }));
+  return { fields, records, error };
+}
+
+export function useDozerEndpointFields (name: string) {
+  const { client } = DozerConsumer();
+  const endpoint = client.getEndpoint(name);
+  const [fields, setFields] = useState<FieldDefinition[]>();
+  const [error, setError] = useState<Error>();
+
+  useEffect(() => {
+    endpoint.getFields().then((response) => {
+      setFields(response.getFieldsList());
+    }).catch(error => {
+      setError(error);
+    });
+  }, [name]);
+
+  return { fields, error };
 }
 
 export function useDozerEndpoint(name: string, options?: {
   query?: DozerQuery,
   watch?: EventType,
 }) {
-  const { count, fields, records } = useDozerEndpointCommon(name, options);
-  return { count, fields, records };
+  const { count, fields, records, error } = useDozerEndpointCommon(name, options);
+  return { count, fields, records, error };
 }
 
 function useDozerEndpointCommon(name: string, options?: {
@@ -36,6 +54,7 @@ function useDozerEndpointCommon(name: string, options?: {
   const [count, setCount] = useState<number>(0);
   const [fields, setFields] = useState<FieldDefinition[]>();
   const [records, setRecords] = useState<Object[]>([]);
+  const [error, setError] = useState<Error>();
   const { client } = DozerConsumer();
   const endpoint = client.getEndpoint(name);
 
@@ -49,6 +68,8 @@ function useDozerEndpointCommon(name: string, options?: {
   useEffect(() => {
     options?.onlyQuery || endpoint.count(options?.query).then((response) => {
       setCount(response.getCount())
+    }).catch(error => {
+      setError(error);
     });
   }, []);
 
@@ -57,6 +78,8 @@ function useDozerEndpointCommon(name: string, options?: {
       const [fields, records] = response;
       setFields(fields);
       setBuffer(records);
+    }).catch(error => {
+      setError(error);
     });
   }, []);
 
@@ -102,7 +125,7 @@ function useDozerEndpointCommon(name: string, options?: {
     }
   }, [])
 
-  return { count, fields, records };
+  return { error, count, fields, records };
 }
 
 function compareFn (record: object, newValue: object = {}, fields: FieldDefinition[], primaryIndexKeys: string[]) {

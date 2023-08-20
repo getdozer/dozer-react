@@ -12,6 +12,11 @@ export declare function useDozerEndpointQuery(name: string, options?: {
 }): {
     fields: FieldDefinition[] | undefined;
     records: Object[];
+    error: Error | undefined;
+};
+export declare function useDozerEndpointFields(name: string): {
+    fields: FieldDefinition[] | undefined;
+    error: Error | undefined;
 };
 export declare function useDozerEndpoint(name: string, options?: {
     query?: DozerQuery;
@@ -20,4 +25,5 @@ export declare function useDozerEndpoint(name: string, options?: {
     count: number;
     fields: FieldDefinition[] | undefined;
     records: Object[];
+    error: Error | undefined;
 };
