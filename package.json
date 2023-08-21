@@ -1,8 +1,8 @@
 {
   "name": "@dozerjs/dozer-react",
-  "version": "0.0.5-beta.2",
+  "version": "0.0.5-beta.3",
   "description": "",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc && cp package.json README.md ./dist",

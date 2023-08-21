@@ -1,9 +1,9 @@
 import { DozerClientOptions } from '@dozerjs/dozer';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 declare const DozerProvider: (props: {
     children: ReactNode;
     value?: DozerClientOptions;
-}) => JSX.Element;
+}) => React.JSX.Element;
 declare const DozerConsumer: () => {
     client: import("@dozerjs/dozer").DozerClient;
 };
