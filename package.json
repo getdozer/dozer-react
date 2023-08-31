@@ -1,11 +1,11 @@
 {
   "name": "@dozerjs/dozer-react",
-  "version": "0.0.5-beta.4",
+  "version": "0.0.5-beta.5",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc && cp package.json README.md ./dist",
+    "build": "npm run clean && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/getdozer/dozer-react#readme",
   "dependencies": {
-    "@dozerjs/dozer": "^0.0.7-beta.4",
+    "@dozerjs/dozer": "^0.0.7-beta.6",
     "@types/react": "^18.0.28"
   },
   "files": [
