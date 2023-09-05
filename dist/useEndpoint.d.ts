@@ -1,5 +1,5 @@
 import { DozerQuery } from "@dozerjs/dozer";
-import { EventType, FieldDefinition } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { EventType, FieldDefinition, Record } from "@dozerjs/dozer/lib/esm/generated/types";
 export declare function useDozerEndpointCount(name: string, options?: {
     query?: DozerQuery;
     watch?: EventType;
@@ -11,7 +11,7 @@ export declare function useDozerEndpointQuery(name: string, options?: {
     watch?: EventType;
 }): {
     fields: FieldDefinition[] | undefined;
-    records: Object[];
+    records: Record[];
     error: Error | undefined;
 };
 export declare function useDozerEndpointFields(name: string): {
@@ -24,6 +24,6 @@ export declare function useDozerEndpoint(name: string, options?: {
 }): {
     count: number;
     fields: FieldDefinition[] | undefined;
-    records: Object[];
+    records: Record[];
     error: Error | undefined;
 };

@@ -1,15 +1,12 @@
 import { DozerClientOptions } from '@dozerjs/dozer';
 import React, { ReactNode, createContext, useContext } from 'react';
-import { useDozerClient } from './useDozerClient';
 
 
+const DozerContext = createContext<DozerClientOptions | null>(null);
 
-const DozerContext = createContext<ReturnType<typeof useDozerClient> | null>(null);
 
-
-const DozerProvider = (props: { children: ReactNode; value?: DozerClientOptions }) => {
-  const value = useDozerClient(props.value);
-  return <DozerContext.Provider value={value}> {props.children} </DozerContext.Provider>;
+const DozerProvider = (props: { children: ReactNode; value: DozerClientOptions }) => {
+  return <DozerContext.Provider value={props.value}> {props.children} </DozerContext.Provider>;
 };
 
 const DozerConsumer = () => {

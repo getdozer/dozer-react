@@ -1,8 +1,7 @@
-import { DozerEndpointEvent, DozerQuery } from "@dozerjs/dozer";
-import { EventType, FieldDefinition, Operation, OperationType, Record, Type } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
-import { useEffect, useRef, useState } from "react";
+import { DozerEndpoint, DozerQuery } from "@dozerjs/dozer";
+import { useEffect, useState } from "react";
 import { DozerConsumer } from "./context";
-import { ClientReadableStream } from "grpc-web";
+import { EventType, FieldDefinition, Operation, OperationType, Record, Type } from "@dozerjs/dozer/lib/esm/generated/types";
 
 export function useDozerEndpointCount(name: string, options?: {
   query?: DozerQuery,
@@ -21,14 +20,14 @@ export function useDozerEndpointQuery(name: string, options?: {
 }
 
 export function useDozerEndpointFields (name: string) {
-  const { client } = DozerConsumer();
-  const endpoint = client.getEndpoint(name);
+  const opts = DozerConsumer();
+  const endpoint = new DozerEndpoint(name, opts);
   const [fields, setFields] = useState<FieldDefinition[]>();
   const [error, setError] = useState<Error>();
 
   useEffect(() => {
     endpoint.getFields().then((response) => {
-      setFields(response.getFieldsList());
+      setFields(response.fields);
     }).catch(error => {
       setError(error);
     });
@@ -53,21 +52,31 @@ function useDozerEndpointCommon(name: string, options?: {
 }) {
   const [count, setCount] = useState<number>(0);
   const [fields, setFields] = useState<FieldDefinition[]>();
-  const [records, setRecords] = useState<Object[]>([]);
+  const [primaryIndexKeys, setPrimaryIndexKeys] = useState<string[]>();
+  const [records, setRecords] = useState<Record[]>([]);
   const [error, setError] = useState<Error>();
-  const { client } = DozerConsumer();
-  const endpoint = client.getEndpoint(name);
+  const opts = DozerConsumer();
+  const endpoint = new DozerEndpoint(name, opts);
 
-  const limit = options?.query?.limit ?? 50;
-  const [buffer, setBuffer] = useState<Object[]>([]);
+  const limit = options?.query?.$limit ?? 50;
+  const [buffer, setBuffer] = useState<Record[]>([]);
 
   useEffect(() => {
     setRecords(buffer.slice(0, limit));
   }, [buffer])
 
   useEffect(() => {
+    options?.watch !== undefined && endpoint.getFields().then((response) => {
+      setFields(response.fields);
+      setPrimaryIndexKeys(response.primaryIndex.map((index: number) => response.fields[index].name));
+    }).catch(error => {
+      setError(error);
+    });
+  }, []);
+
+  useEffect(() => {
     options?.onlyQuery || endpoint.count(options?.query).then((response) => {
-      setCount(response.getCount())
+      setCount(response.count)
     }).catch(error => {
       setError(error);
     });
@@ -75,9 +84,8 @@ function useDozerEndpointCommon(name: string, options?: {
 
   useEffect(() => {
     options?.onlyCount || endpoint.query(options?.query).then((response) => {
-      const [fields, records] = response;
-      setFields(fields);
-      setBuffer(records);
+      setFields(response.fields);
+      setBuffer(response.records.map(item => item.record!));
     }).catch(error => {
       setError(error);
     });
@@ -85,19 +93,20 @@ function useDozerEndpointCommon(name: string, options?: {
 
   useEffect(() => {
     if (options?.watch !== undefined) {
-      const stream = endpoint.onEvent((evt: DozerEndpointEvent) => {
-        if (evt.data.typ === OperationType.INSERT) {
-          options.onlyCount || setBuffer((prev: Object[]) => {
-            if (prev.length < limit * 2 && evt.data.new) {
-              return [...prev, evt.data.new];
+      const subscription = endpoint.OnEvent(options.watch, options.query?.$filter).subscribe((evt: Operation) => {
+        console.log(evt);
+        if (evt.typ === OperationType.INSERT) {
+          options.onlyCount || setBuffer((prev: Record[]) => {
+            if (prev.length < limit * 2 && evt.new) {
+              return [...prev, evt.new];
             } else {
               return prev;
             }
           });
           options.onlyQuery || setCount((prev: number) => prev + 1);
-        } else if (evt.data.typ === OperationType.DELETE) {
-          options.onlyCount || setBuffer((prev: Object[]) => {
-            const index = prev.findIndex((record) => compareFn(record, evt.data.new, evt.fields, evt.primaryIndexKeys));
+        } else if (evt.typ === OperationType.DELETE) {
+          options.onlyCount || setBuffer((prev: Record[]) => {
+            const index = prev.findIndex((record) => compareFn(record, evt.old!, fields, primaryIndexKeys));
             if (index > -1) {
               prev.splice(index, 1);
               return prev;
@@ -106,36 +115,35 @@ function useDozerEndpointCommon(name: string, options?: {
             }
           });
           options.onlyQuery || setCount((prev: number) => Math.max(prev - 1, 0));
-        } else if (evt.data.typ === OperationType.UPDATE) {
-          options.onlyCount || setBuffer((prev: Object[]) => {
-            const newValue: Record = evt.data.new as Record ?? {};
-            const index = prev.findIndex((record) => compareFn(record, evt.data.new, evt.fields, evt.primaryIndexKeys));
+        } else if (evt.typ === OperationType.UPDATE) {
+          options.onlyCount || setBuffer((prev: Record[]) => {
+            const index = prev.findIndex((record) => compareFn(record, evt.new!, fields, primaryIndexKeys));
             if (index > -1) {
-              prev.splice(index, 1, newValue);
+              prev.splice(index, 1, evt.new!);
               return [...prev];;
             } else {
               return prev;
             }
           });
         }
-      }, options.watch, options.query?.filter);
+      })
       return () => {
-        stream?.cancel();
+        subscription?.unsubscribe();
       }
     }
-  }, [])
+  }, [fields])
 
   return { error, count, fields, records };
 }
 
-function compareFn (record: object, newValue: object = {}, fields: FieldDefinition[], primaryIndexKeys: string[]) {
-  return primaryIndexKeys.every((key) => {
+function compareFn (record: Record, newValue: Record, fields?: FieldDefinition[], primaryIndexKeys?: string[]) {
+  return primaryIndexKeys?.every((key) => {
     const k = key as keyof Record;
-    const f = fields?.find((f) => f.getName() === key);
-    if (f?.getTyp() === Type.POINT) {
-      return (record as Record)[k].toString() === (newValue as Record)[k].toString();
+    const f = fields?.find((f) => f.name === key);
+    if (f?.typ === Type.Point) {
+      return record[k].toString() === newValue[k].toString();
     } else {
-      return (record as Record)[k] === (newValue as Record)[k];
+      return record[k] === record[k];
     }
   })
 }
