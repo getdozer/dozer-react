@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
-import { ApiClient, ApiClientOptions } from "@dozerjs/dozer";
-import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
-import { EventType, FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
-import { DozerFilter, DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
+import { ApiClient, ApiClientOptions, DozerFilter, DozerQuery } from "@dozerjs/dozer";
 import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
+import { EventType, FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { useEffect, useState } from "react";
 import ServingStatus = HealthCheckResponse.ServingStatus;
 
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void
 
+
+/**
+ * @deprecated
+ * called in the methods of DozerEndpoint already
+ */
 const waitForHealthyService = (client: ApiClient, cb: () => void) => {
   let startService = () => {
     client.healthCheck().then(status => {
@@ -83,7 +87,10 @@ const getClient = (clientOrParams: ApiClient | ClientParams): ApiClient => {
   return clientOrParams as ApiClient;
 }
 
-
+/**
+ * @deprecated
+ * use useDozerEndpointCount instead
+ */
 const useCount = (clientOrParams: ApiClient | ClientParams, query?: DozerQuery) => {
   const [count, setCount] = useState(0);
   const client = getClient(clientOrParams);
@@ -102,6 +109,10 @@ export interface CommonQueryStateType {
   fields: Object[]
 }
 
+/**
+ * @deprecated
+ * use useDozerEndpointQuery instead
+ */
 const useQueryCommon = (clientOrParams: ApiClient | ClientParams, query?: DozerQuery) => {
   const [state, setState] = useState<CommonQueryStateType>({ records: [], fields: [] });
 
@@ -117,6 +128,10 @@ const useQueryCommon = (clientOrParams: ApiClient | ClientParams, query?: DozerQ
   return state;
 };
 
+/**
+ * @deprecated
+ * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
+ */
 const useOnEvent = (clientOrParams: ApiClient | ClientParams, cb: OnEventCallback, eventType?: EventType, filter?: DozerFilter) => {
   const [fields, setFields] = useState<FieldDefinition[]>([])
   const [isCalled, setIsCalled] = useState(false);
@@ -129,7 +144,7 @@ const useOnEvent = (clientOrParams: ApiClient | ClientParams, cb: OnEventCallbac
         client.getFields().then(response => {
           let fields = response.getFieldsList();
           setFields(fields);
-          let primaryIndexList = response.getPrimaryIndexList();
+          let primaryIndexList: number[] = response.getPrimaryIndexList();
           const mapper = new RecordMapper(fields);
           const primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
           return { fields, mapper, primaryIndexKeys };
@@ -146,4 +161,10 @@ const useOnEvent = (clientOrParams: ApiClient | ClientParams, cb: OnEventCallbac
   return [fields];
 };
 
-export { useQueryCommon, useCount, useOnEvent }
+export * from './context';
+export * from './useDozerClient';
+export * from './useEndpoint';
+
+export { useCount, useOnEvent, useQueryCommon };
+
+  

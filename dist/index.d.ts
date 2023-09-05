@@ -1,12 +1,33 @@
+import { ApiClient, ApiClientOptions, DozerFilter, DozerQuery } from "@dozerjs/dozer";
+import { EventType, FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
 import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
-import { FieldDefinition, Operation } from "@dozerjs/dozer/lib/esm/generated/protos/types_pb";
-import { DozerQuery } from "@dozerjs/dozer/lib/esm/query_helper";
 type OnEventCallback = (data: Operation, fields: FieldDefinition[], primaryIndexKeys: string[], mapper: RecordMapper) => void;
-declare const useCount: (endpoint: string, authToken: string | null) => number[];
+type PartialType<Type> = {
+    [Property in keyof Type]?: Type[Property];
+};
+type ClientParams = PartialType<ApiClientOptions> & {
+    endpoint: string;
+};
+/**
+ * @deprecated
+ * use useDozerEndpointCount instead
+ */
+declare const useCount: (clientOrParams: ApiClient | ClientParams, query?: DozerQuery) => (number | ApiClient)[];
 export interface CommonQueryStateType {
     records: Object[];
     fields: Object[];
 }
-declare const useQueryCommon: (endpoint: string, query: DozerQuery | null | undefined, authToken: string | null) => CommonQueryStateType;
-declare const useOnEvent: (endpoint: string, cb: OnEventCallback, authToken: string | null) => FieldDefinition[][];
-export { useQueryCommon, useCount, useOnEvent };
+/**
+ * @deprecated
+ * use useDozerEndpointQuery instead
+ */
+declare const useQueryCommon: (clientOrParams: ApiClient | ClientParams, query?: DozerQuery) => CommonQueryStateType;
+/**
+ * @deprecated
+ * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
+ */
+declare const useOnEvent: (clientOrParams: ApiClient | ClientParams, cb: OnEventCallback, eventType?: EventType, filter?: DozerFilter) => FieldDefinition[][];
+export * from './context';
+export * from './useDozerClient';
+export * from './useEndpoint';
+export { useCount, useOnEvent, useQueryCommon };

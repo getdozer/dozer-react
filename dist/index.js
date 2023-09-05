@@ -1,8 +1,23 @@
-import { useEffect, useState } from "react";
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 import { ApiClient } from "@dozerjs/dozer";
-import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
 import { HealthCheckResponse } from "@dozerjs/dozer/lib/esm/generated/protos/health_pb";
+import { RecordMapper } from "@dozerjs/dozer/lib/esm/helper";
+import { useEffect, useState } from "react";
 var ServingStatus = HealthCheckResponse.ServingStatus;
+/**
+ * @deprecated
+ * called in the methods of DozerEndpoint already
+ */
 const waitForHealthyService = (client, cb) => {
     let startService = () => {
         client.healthCheck().then(status => {
@@ -18,61 +33,34 @@ const waitForHealthyService = (client, cb) => {
     };
     startService();
 };
-// TODO: Refactor this to useStreamWithInitialQuery
-// const useGrpcData = (endpoint) => {
-//   const [fields, setFields] = useState([])
-//   const [state, setState] = useState({ records: [] });
-//
-//   let client = new DozerClient(endpoint);
-//   useEffect(() => {
-//     client.query().then((response) => {
-//       let mapper = new RecordMapper(response.getFieldsList());
-//       setFields(response.getFieldsList());
-//       setState({records: response.getRecordsList().map(v => mapper.mapRecord(v.getRecord().getValuesList()))});
-//     });
-//   }, [])
-//
-//   useEffect(() => {
-//     if (fields.length > 0) {
-//       client.getFields().then(fieldsResponse => {
-//         let fields = fieldsResponse.getFieldsList();
-//         let mapper = new RecordMapper(fieldsResponse.getFieldsList());
-//         let primaryIndexList = fieldsResponse.getPrimaryIndexList();
-//         let primaryIndexKeys = primaryIndexList.map(index => fields[index].getName());
-//
-//         let stream = client.onEvent();
-//         stream.on('data', data => {
-//           if (data.getTyp() === OperationType.UPDATE) {
-//             let oldValue = mapper.mapRecord(data.getOld().getValuesList());
-//             let records = state.records;
-//             let existingIndex = records.findIndex(v => primaryIndexKeys.every(k => v[k] === oldValue[k]))
-//
-//             if (existingIndex > -1) {
-//               records[existingIndex] = mapper.mapRecord(data.getNew().getValuesList());
-//               setState({ records: [...records] });
-//             }
-//           }
-//         });
-//       })
-//     }
-//   }, [fields]);
-//
-//   return [state.records, fields];
-// }
-//
-const useCount = (endpoint, authToken) => {
+const getClient = (clientOrParams) => {
+    if (!(clientOrParams instanceof ApiClient)) {
+        const { endpoint } = clientOrParams, clientOptions = __rest(clientOrParams, ["endpoint"]);
+        return new ApiClient(endpoint, clientOptions);
+    }
+    return clientOrParams;
+};
+/**
+ * @deprecated
+ * use useDozerEndpointCount instead
+ */
+const useCount = (clientOrParams, query) => {
     const [count, setCount] = useState(0);
-    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
+    const client = getClient(clientOrParams);
     useEffect(() => {
-        client.count().then((response) => {
+        client.count(query).then((response) => {
             setCount(response.getCount);
         });
     }, []);
-    return [count];
+    return [count, client];
 };
-const useQueryCommon = (endpoint, query = null, authToken) => {
+/**
+ * @deprecated
+ * use useDozerEndpointQuery instead
+ */
+const useQueryCommon = (clientOrParams, query) => {
     const [state, setState] = useState({ records: [], fields: [] });
-    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
+    const client = getClient(clientOrParams);
     useEffect(() => {
         waitForHealthyService(client, () => {
             client.query(query).then(([fields, records]) => {
@@ -82,10 +70,14 @@ const useQueryCommon = (endpoint, query = null, authToken) => {
     }, []);
     return state;
 };
-const useOnEvent = (endpoint, cb, authToken) => {
+/**
+ * @deprecated
+ * set watch to true in useDozerEndpoint, useDozerEndpointCount, useDozerEndpointQuery,
+ */
+const useOnEvent = (clientOrParams, cb, eventType, filter) => {
     const [fields, setFields] = useState([]);
     const [isCalled, setIsCalled] = useState(false);
-    let client = new ApiClient(endpoint, authToken ? { authToken } : undefined);
+    let client = getClient(clientOrParams);
     useEffect(() => {
         if (!isCalled) {
             setIsCalled(true);
@@ -99,7 +91,7 @@ const useOnEvent = (endpoint, cb, authToken) => {
                     return { fields, mapper, primaryIndexKeys };
                 }).then(({ fields, mapper, primaryIndexKeys }) => {
                     if (fields.length > 0) {
-                        let stream = client.onEvent();
+                        let stream = client.onEvent(eventType, filter);
                         stream.on('data', (data) => cb(data, fields, primaryIndexKeys, mapper));
                     }
                 });
@@ -108,4 +100,7 @@ const useOnEvent = (endpoint, cb, authToken) => {
     }, [isCalled]);
     return [fields];
 };
-export { useQueryCommon, useCount, useOnEvent };
+export * from './context';
+export * from './useDozerClient';
+export * from './useEndpoint';
+export { useCount, useOnEvent, useQueryCommon };
